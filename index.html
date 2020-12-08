@@ -300,7 +300,7 @@ input:checked + .slider:before {
       <textarea rows="6" placeholder="Enter Push Notification Message" id="message" name="message" required></textarea>
       <!--<a href="javascript:void(0)">--><button type="submit" id="submit" name="submit">Send</button>
       <!--</a>-->
-
+      <input type="hidden" name="token" id="token" value="AAAAf2KjtfI:APA91bHO3_leCFldvXjtJUIqK7eGFhbNucQK4xHh3JhW3ROBi9h7A64HloCV8hrbAu2rls7AveyD9Y7BRylk9L_Xf8uqfNK-mVBqTyH4UDeXA4DBtk7bq_B72DbqDumFCQAu88IjMzU7">
     </form>
     <div id="error"></div>
     <div id="success-msg"></div>
@@ -325,7 +325,8 @@ function switchTheme(e) {
 toggleSwitch.addEventListener("change", switchTheme, false);
 
 const name = document.getElementById("name");
-const email = document.getElementById("email");
+const token = document.getElementById("token");
+// const email = document.getElementById("email");
 const message = document.getElementById("message");
 const contactForm = document.getElementById("contact-form");
 const errorElement = document.getElementById("error");
@@ -336,19 +337,19 @@ const validate = (e) => {
   e.preventDefault();
 
   if (name.value.length < 3) {
-    errorElement.innerHTML = "Your name should be at least 3 characters long.";
+    errorElement.innerHTML = "Device Token Missing";
     return false;
   }
 
-  if (!(email.value.includes(".") && email.value.includes("@"))) {
-    errorElement.innerHTML = "Please enter a valid email address.";
-    return false;
-  }
+//   if (!(email.value.includes(".") && email.value.includes("@"))) {
+//     errorElement.innerHTML = "Please enter a valid email address.";
+//     return false;
+//   }
 
-  if (!emailIsValid(email.value)) {
-    errorElement.innerHTML = "Please enter a valid email address.";
-    return false;
-  }
+//   if (!emailIsValid(email.value)) {
+//     errorElement.innerHTML = "Please enter a valid email address.";
+//     return false;
+//   }
 
   if (message.value.length < 15) {
     errorElement.innerHTML = "Please write a longer message.";
@@ -357,20 +358,49 @@ const validate = (e) => {
 
   errorElement.innerHTML = "";
   successMsg.innerHTML =
-    "Thank you! I will get back to you as soon as possible.";
+    "Thank you! I will get notification";
 
   e.preventDefault();
+  
+  var data = JSON.stringify({
+  "to": name.value,
+  "data": {
+      "title": "PUSH Notification Test",
+      "body": message.value,
+      "icon": ""
+  }
+});
+
+var xhr = new XMLHttpRequest();
+xhr.withCredentials = true;
+
+xhr.addEventListener("readystatechange", function () {
+  if (this.readyState === 4) {
+    console.log(this.responseText);
+  }
+});
+
+  var key = "key="+token.value;
+  
+ 
+xhr.open("POST", "https://fcm.googleapis.com/fcm/send");
+xhr.setRequestHeader("authorization", key);
+xhr.setRequestHeader("content-type", "application/json");
+xhr.setRequestHeader("cache-control", "no-cache");
+
+xhr.send(data);
+  
   setTimeout(function () {
     successMsg.innerHTML = "";
-    document.getElementById("contact-form").reset();
+    //document.getElementById("contact-form").reset();
   }, 6000);
 
   return true;
 };
 
-const emailIsValid = (email) => {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-};
+// const emailIsValid = (email) => {
+//   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+// };
 
 submitBtn.addEventListener("click", validate);
 
